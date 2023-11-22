@@ -1,0 +1,8 @@
+"0","#revisando los histogramas"
+"0",""
+"0",""
+"0","train %>% pivot_longer(!grupo,names_to=""range"",values_to=""value"")->datos"
+"0",""
+"0",""
+"0","ggplot(datos, aes(x=range, y=value, color=grupo)) +"
+"0","  geom_boxplot()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=8))"

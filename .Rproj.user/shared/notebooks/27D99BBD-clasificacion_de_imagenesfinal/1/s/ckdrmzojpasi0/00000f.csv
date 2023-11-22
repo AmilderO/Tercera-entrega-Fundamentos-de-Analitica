@@ -1,0 +1,2 @@
+"0","img_crop = img_g[150:900,360:650]"
+"0","display(img_crop,method='raster',all=TRUE)"
