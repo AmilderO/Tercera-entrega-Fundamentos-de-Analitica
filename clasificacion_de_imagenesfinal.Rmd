@@ -22,22 +22,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 1. Introducción
 
-La clasificación de imágenes es objeto de estudio y aplicación en múltiples áreas del conocimiento. En el caso más simple, se busca tomar una decisión con base en la información que contiene una imagen [1]. En este reporte se aborda el ejercicio de clasificar imágenes de sujetos con lentes/gafas utilizando técnicas de aprendizaje estadístico supervisadas.
+La clasificación de imágenes representa un área de estudio y aplicación diversa en múltiples disciplinas. En su forma más básica, implica tomar decisiones basadas en la información contenida en una imagen. Este informe se centra en el desafío de clasificar imágenes de individuos usando gafas mediante técnicas de aprendizaje estadístico supervisado.
 
 
 ## 2. Datos
 
-El conjunto de datos se obtuvo del curso T81-855: [Applications of Deep Learning](https://sites.wustl.edu/jeffheaton/t81-558/) dirigido por el profesor [Jeff Heaton](https://github.com/jeffheaton), en la Washington University in St. Louis (WUSTL). Los datos, están alojados en un reto de [Kaggle](https://www.kaggle.com/jeffheaton/glasses-or-no-glasses) del año 2020, en donde se encuentran 5000 imágenes producidas artificialmente a través de una red neuronal adversa generativa (GAN). Se pueden encontrar personas con lentes y personas sin lentes. Dentro de las imágenes de personas con lentes se hallan 6 tipos de lentes. La figura 1 presenta una muestra de los tipos de lentes que se pueden encontrar en el conjunto de datos:
+El conjunto de datos se obtuvo del curso T81-855: [Applications of Deep Learning](https://sites.wustl.edu/jeffheaton/t81-558/) dirigido por el profesor [Jeff Heaton](https://github.com/jeffheaton), en la Washington University in St. Louis (WUSTL). Los datos, están alojados en un reto de [Kaggle](https://www.kaggle.com/jeffheaton/glasses-or-no-glasses) del año 2020, en donde se encuentran 5000 imágenes producidas artificialmente a través de una red neuronal adversa generativa (GAN). El conjunto incluye personas con y sin gafas, y dentro de las imágenes de personas con gafas, se distinguen seis tipos de lentes. La figura 1 presenta una muestra de los tipos de lentes que se pueden encontrar en el conjunto de datos:
 
 
 ![Figura 1. Tipos de lentes](https://data.heatonresearch.com/images/wustl/kaggle/kaggle-faces-glasses-2.png)
 
-El conjunto de datos es revisado y se eliminan imágenes que se consideran podrían pertubar el aprendizaje del modelo, en éstas se hallaban personas con lentes a medio construir, dos rostros en una misma imagen y otras con detalles similares. Finalmente el conjunto de datos queda con 454 imágenes de sujetos con lentes y 618 de sujetos sin lentes. También, se eligió esta cantidad de datos por la capacidad y velocidad de procesamiento que se tiene al alcance.
+El conjunto de datos fue revisado y se eliminaron imágenes que podrían afectar el aprendizaje del modelo, como personas con lentes a medio construir o dos rostros en una misma imagen. El conjunto final consta de 454 imágenes con lentes y 618 sin lentes, seleccionadas para adaptarse a la capacidad y velocidad de procesamiento disponibles.
 
 
 ### 2.1. Procesamiento 
 
-Las imágenes se pueden vectorizar. Es decir, vista la imagen como una matriz, sus columnas se ubican consecutivamente una debajo de la otra hasta obtener un vector. Luego, los vectores serán las filas de una matriz de datos con la información de intensidades para cada píxel en las respectivas imágenes.
+Las imágenes se pueden vectorizar. Estos vectores generados a partir de las imagenes serán las filas de una matriz de datos con la información de intensidades para cada píxel en las respectivas imágenes.
 
 Para describir una forma de comparar los vectores, usaremos una muestra de 6 sujetos (3 con gafas y 3 sin gafas). Las figuras serán analizadas con el paquete [EBImage](https://bioconductor.org/packages/release/bioc/html/EBImage.html)
 
@@ -98,14 +98,14 @@ img = readImage(imagename)
 imagename <-lista[2]
 img2 = readImage(imagename)
 ```
-Se puede evidenciar a continuación una figura de un hombre sin gafas de una de las imágenes del modelo.
+A continuación del modelo se toma una figura de un hombre sin gafas.
 
 ```{r  message=FALSE, warning=FALSE , echo=T,fig.width= 2,fig.height= 2,fig.align='center'}
 #Podemos mostrarla con el siguiente código
 display(img,method='raster',all=TRUE)
 ```
 
-Igualmente, se muestra una figura de un hombre con gafas en una de las imágenes del modelo.
+Igualmente, se muestra una figura de un hombre con gafas.
 
 ```{r  message=FALSE, warning=FALSE , echo=T,fig.width= 2,fig.height= 2,fig.align='center' }
 display(img2,method='raster',all=TRUE)
@@ -125,7 +125,7 @@ display(img_g,method='raster',all=TRUE)
 display(img_g2,method='raster',all=TRUE)
 ```
 
-Ya que todas las figuras fueron creadas por computadora, los lentes se ubicarán casi en la misma posición, por esa razón se delimitaron las imágenes.
+Las imágenes fueron delimitadas seleccionando regiones específicas. Las coordenadas utilizadas para el recorte fueron [150:900, 360:650].
 
 ```{r  message=FALSE, warning=FALSE , echo=T, fig.width= 3,fig.height= 3,fig.align='center' }
 img_crop = img_g[150:900,360:650]
@@ -135,7 +135,7 @@ img_crop2 = img_g2[150:900,360:650]
 display(img_crop2,method='raster',all=TRUE)
 ```
 
-Inclusive, se podría cortar solamente el septo nasal que es donde se marcan más los lentes para diferenciar las personas que usan o no gafas. Como se muestra a continuación:
+Las imágenes fueron recortadas focalizando únicamente la nariz, ya que el area logra ser distintivo y diferenciador para los sujetos que usan lentes. Las coordenadas utilizadas para el recorte fueron [440:590, 440:580].
 
 ```{r  message=FALSE, warning=FALSE , echo=T, fig.width= 3,fig.height= 3,fig.align='center' }
 img_crop = img_g[440:590,440:580]
@@ -168,13 +168,13 @@ hist(img_crop,breaks=100)
 
 ```
 
-Finalmente, se evidenció que habían diferencias entre los histogramas de personas con o sin gafas, ya que se aprecia que hay un perfil diferente entre la personas que tienen gafas y las que no. Para ello, se utilizó la intensidad de luz que está en una escala de 0 a 1, donde el 0 representa la tonalidad más oscura de la imagen y el 1 la más clara. Es decir, si en la fotografía existen más píxeles en la parte oscura, entonces la frecuencia allí representada en el histograma será mayor.
+En resumen, se identificaron diferencias significativas entre los histogramas de personas con y sin gafas. La variación en la intensidad de luz, representada en una escala de 0 a 1, revela perfiles distintivos. En las imágenes sin gafas, la frecuencia se encuentra hacia el lado derecho, indicando mayor intensidad de luz. 
 
-Para las imágenes que no tienen lentes, la frecuencia está hacia el lado derecho, es decir, que la imagen tiene más intensidad de luz. Para las imágenes que tienen lentes oscuros, la frecuencia está hacia el lado izquierdo, es decir, que la imagen tiene más píxeles oscuros. Y finalmente, para las imágenes que tienen lentes transparentes, la frecuencia tiene más variabilidad pero aún así se puede notar que son diferentes a las demás.
+Por el contrario, en las imágenes con lentes oscuros, la frecuencia se sitúa hacia el lado izquierdo, indicando más píxeles oscuros. En el caso de las imágenes con lentes transparentes, se observa una variabilidad en la frecuencia, pero aún así se diferencian de las otras categorías.
 
 ## 3. Modelo
 
-Con la intención de buscar una forma para poder comparar los vectores se crea una matriz con datos de intensidad, en donde, se establecen los cuartiles del histograma para obtener un perfil de comparación. Y además, con apoyo de una función cíclica, la cual comienza en 1 hasta el tamaño de la lista, se crea una matriz(representa las fotos con gafas) que finalmente se almacena en un archivo csv.
+Se implementó un código en R que busca comparar vectores de intensidad mediante la creación de una matriz de datos. Esta matriz se construye utilizando cuartiles obtenidos a partir de histogramas de imágenes. El proceso incluye la lectura de imágenes, conversión a escala de grises, recorte de regiones específicas, y cálculo de histogramas para extraer los cuartiles. La información resultante se organiza en una matriz, representando perfiles de comparación
 
 ```{r message=FALSE, warning=FALSE, results = 'hide', echo=F}
 #Entrar al directorio base
@@ -247,7 +247,7 @@ Se realiza el mismo proceso anterior para el caso de fotos sin gafas, que igualm
 
 En este modelo, generamos 200 valores numéricos para cada imagen recortada, donde dichos valores representan la cantidad de píxeles.
 
-A continuación se muestran los valores divididos en rangos con respecto a su nivel de intensidad de luz, para así tener más resolución en los resultados.
+A continuación, se presentan los valores divididos en rangos para las imágenes con y sin gafas, respectivamente.
 ```{r, fig.dim = c(18, 6), dpi=600, message=FALSE}
 #Entrar al directorio base
 
@@ -647,12 +647,14 @@ De acuerdo al resultado, nuestra sospecha es cierta de que las medias de los val
 
 ## 6. Enlace de interés
 
-Usted puede revisar el código y los datos usados en este proyecto en nuestro repositorio en [Github]()
+Usted puede revisar el código y los datos usados en este proyecto en nuestro repositorio en [Github](https://github.com/AmilderO/Tercera-entrega-Fundamentos-de-Analitica)
 
 ## 7. Referencias
 
 [1] https://www.um.es/geograf/sigmur/temariohtml/node74.html  
-[2] https://empresas.blogthinkbig.com/como-interpretar-la-matriz-de-confusion-ejemplo-practico/
+[2] https://empresas.blogthinkbig.com/como-interpretar-la-matriz-de-confusion-ejemplo-practico
+[3] https://archive.ics.uci.edu/dataset/124/cmu+face+images
+
 
 
 
